@@ -1,4 +1,3 @@
-//firebase imports
 import {
   GoogleAuthProvider,
   signInWithPopup,
@@ -6,36 +5,32 @@ import {
   updateProfile,
 } from "firebase/auth";
 import { auth } from "../firebase/firebaseConfig";
-//react imports
 import { useState } from "react";
-
-//context
 import { useGlobalContext } from "./useGlobalContext";
-//toast
 import toast from "react-hot-toast";
 
 export const useRegister = () => {
-  const [isPanding, setIsPanding] = useState(false);
+  const [isPending, setIsPending] = useState(false);
   const { dispatch } = useGlobalContext();
-  //register with goole
+
+  // Register with Google
   const registerWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     try {
-      setIsPanding(true);
+      setIsPending(true);
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       dispatch({ type: "LOG_IN", payload: user });
       toast.success(`Welcome, ${user.displayName}`);
-      setIsPanding(false);
+      setIsPending(false);
     } catch (error) {
-      const errorMessage = error.message;
-      console.log(errorMessage);
-      setIsPanding(false);
+      console.error(error.message);
+      toast.error(error.message);
+      setIsPending(false);
     }
   };
 
-  //register with email and password
-
+  // Register with email and password
   const registerEmailAndPassword = async (
     email,
     password,
@@ -47,10 +42,14 @@ export const useRegister = () => {
       if (confirmpassword !== password) {
         throw new Error("Passwords did not match");
       }
-      const register = createUserWithEmailAndPassword(auth, email, password);
+      setIsPending(true);
+      const register = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = register.user;
 
-      setIsPanding(true);
-      const user = (await register).user;
       await updateProfile(auth.currentUser, {
         photoURL,
         displayName,
@@ -58,13 +57,13 @@ export const useRegister = () => {
 
       dispatch({ type: "LOG_IN", payload: user });
       toast.success(`Welcome, ${user.displayName}`);
-      setIsPanding(false);
+      setIsPending(false);
     } catch (error) {
-      const errorMessage = error.message;
-      toast.error(errorMessage);
-      setIsPanding(false);
+      console.error(error.message);
+      toast.error(error.message);
+      setIsPending(false);
     }
   };
 
-  return { registerWithGoogle, isPanding, registerEmailAndPassword };
+  return { registerWithGoogle, isPending, registerEmailAndPassword };
 };

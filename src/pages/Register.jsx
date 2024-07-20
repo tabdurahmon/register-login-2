@@ -1,27 +1,24 @@
-//rrd import
+// pages/Register.js
+
 import { Form, Link, useActionData } from "react-router-dom";
-import { useEffect } from "react";
-
-//components
+import { useEffect, useState } from "react";
 import { FormInput } from "../components";
+import { action as registerAction } from "./Register";
+import { useRegister } from "../hooks/useRegister";
 
-//Action
 export const action = async ({ request }) => {
   let formData = await request.formData();
   let displayName = formData.get("displayName");
   let photoURL = formData.get("photoURL");
   let email = formData.get("email");
   let password = formData.get("password");
-  return { displayName, photoURL, email, password };
+  let confirmpassword = formData.get("confirmpassword");
+  return { displayName, photoURL, email, password, confirmpassword };
 };
-
-//custom hooks
-import { useRegister } from "../hooks/useRegister";
 
 function Register() {
   const user = useActionData();
-
-  const { isPanding, registerWithGoogle, registerEmailAndPassword } =
+  const { isPending, registerWithGoogle, registerEmailAndPassword } =
     useRegister();
 
   useEffect(() => {
@@ -30,7 +27,8 @@ function Register() {
         user.email,
         user.password,
         user.displayName,
-        user.photoURL
+        user.photoURL,
+        user.confirmpassword
       );
     }
   }, [user]);
@@ -67,42 +65,45 @@ function Register() {
             name="password"
             placeholder="Password"
           />
+          <FormInput
+            label="Confirm Password :"
+            type="password"
+            name="confirmpassword"
+            placeholder="Confirm Password"
+          />
           <div className="mt-6">
-            {isPanding && (
-              <button disabled className="btn   btn-block font-bold">
+            {isPending && (
+              <button disabled className="btn btn-block font-bold">
                 Loading...
               </button>
             )}
-            {!isPanding && (
-              <button className="btn    btn-block mb-3 font-bold">
-                Register
-              </button>
+            {!isPending && (
+              <button className="btn btn-block mb-3 font-bold">Register</button>
             )}
           </div>
           <div>
-            {isPanding && (
+            {isPending && (
               <button
                 disabled
                 type="button"
-                className="btn   btn-block font-bold"
+                className="btn btn-block font-bold"
               >
                 Loading...
               </button>
             )}
-            {!isPanding && (
+            {!isPending && (
               <button
                 onClick={registerWithGoogle}
                 type="button"
-                className="btn  btn-block font-bold"
+                className="btn btn-block font-bold"
               >
                 Google
               </button>
             )}
           </div>
-
           <div className="text-center">
             <p className="font-medium text-slate-500">
-              If you have account,{" "}
+              If you have an account,{" "}
               <Link className="link link-primary" to="/login">
                 Login
               </Link>
